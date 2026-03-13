@@ -371,19 +371,22 @@ class BleManager(private val context: Context) {
             mainHandler.post { callback?.onLog("Command char not found") }
             return
         }
+        // Use WRITE_NO_RESPONSE so onCharacteristicWrite is not required;
+        // call operationComplete() immediately to avoid stalling the queue.
         enqueueOperation(Runnable {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 gatt.writeCharacteristic(
                     char,
                     command.toByteArray(),
-                    BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+                    BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
                 )
             } else {
                 char.value = command.toByteArray()
-                char.writeType = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+                char.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
                 gatt.writeCharacteristic(char)
             }
             mainHandler.post { callback?.onLog("CMD: $command") }
+            operationComplete()
         })
     }
 

@@ -53,6 +53,7 @@ class DataFragment : Fragment(), BleManager.BleCallback {
     private val logBuilder = StringBuilder()
     private val pendingRecords = mutableListOf<SensorRecord>()  // collecting READBUF stream
     private var isFetching = false
+    private val fetchTimeoutHandler = Handler(Looper.getMainLooper())
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -247,6 +248,17 @@ class DataFragment : Fragment(), BleManager.BleCallback {
         btnFetchAll.text = "Fetching..."
         addLog("Sending READBUF — waiting for buffer stream...")
         ma.bleManager.sendCommand("READBUF")
+
+        // Timeout: re-enable button if END:N never arrives within 15 seconds
+        fetchTimeoutHandler.postDelayed({
+            if (isFetching) {
+                isFetching = false
+                btnFetchAll.isEnabled = true
+                btnFetchAll.text = "FETCH VIA BLE"
+                addLog("Fetch timeout — no response from device")
+                showToast("Fetch timed out")
+            }
+        }, 15000)
     }
 
     private fun publishAllToMqtt() {
@@ -353,6 +365,7 @@ class DataFragment : Fragment(), BleManager.BleCallback {
     }
 
     override fun onBufferComplete(total: Int) {
+        fetchTimeoutHandler.removeCallbacksAndMessages(null)
         isFetching = false
         sensorRecords.clear()
         sensorRecords.addAll(pendingRecords)
