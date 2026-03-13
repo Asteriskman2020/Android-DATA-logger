@@ -14,7 +14,6 @@ class SensorAdapter(
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvIndex: TextView = view.findViewById(R.id.tvIndex)
-        val tvTime: TextView = view.findViewById(R.id.tvTime)
         val tvTempAht: TextView = view.findViewById(R.id.tvTempAht)
         val tvHumidity: TextView = view.findViewById(R.id.tvHumidity)
         val tvPressure: TextView = view.findViewById(R.id.tvPressure)
@@ -30,7 +29,6 @@ class SensorAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val record = records[position]
         holder.tvIndex.text = record.index.toString()
-        holder.tvTime.text = record.toDisplayTime()
         holder.tvTempAht.text = "%.1f".format(record.tempAht)
         holder.tvHumidity.text = "%.1f".format(record.humidity)
         holder.tvPressure.text = "%.1f".format(record.pressure)

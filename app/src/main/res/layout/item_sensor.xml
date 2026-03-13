@@ -3,12 +3,12 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:paddingTop="4dp"
-    android:paddingBottom="4dp">
+    android:paddingTop="5dp"
+    android:paddingBottom="5dp">
 
     <TextView
         android:id="@+id/tvIndex"
-        android:layout_width="40dp"
+        android:layout_width="36dp"
         android:layout_height="wrap_content"
         android:textSize="11sp"
         android:textColor="#212121"
@@ -16,18 +16,10 @@
         android:text="#" />
 
     <TextView
-        android:id="@+id/tvTime"
-        android:layout_width="70dp"
-        android:layout_height="wrap_content"
-        android:textSize="11sp"
-        android:textColor="#212121"
-        android:gravity="center"
-        android:text="--:--:--" />
-
-    <TextView
         android:id="@+id/tvTempAht"
-        android:layout_width="55dp"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:textSize="11sp"
         android:textColor="#212121"
         android:gravity="center"
@@ -35,8 +27,9 @@
 
     <TextView
         android:id="@+id/tvHumidity"
-        android:layout_width="55dp"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:textSize="11sp"
         android:textColor="#212121"
         android:gravity="center"
@@ -44,8 +37,9 @@
 
     <TextView
         android:id="@+id/tvPressure"
-        android:layout_width="65dp"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1.4"
         android:textSize="11sp"
         android:textColor="#212121"
         android:gravity="center"
@@ -53,8 +47,9 @@
 
     <TextView
         android:id="@+id/tvTempBmp"
-        android:layout_width="55dp"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:textSize="11sp"
         android:textColor="#212121"
         android:gravity="center"
