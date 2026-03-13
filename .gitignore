@@ -1,0 +1,24 @@
+*.iml
+.gradle
+/local.properties
+/.idea/
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Android build
+app/build/
+app/.cxx/
+
+# Kotlin
+*.kotlin_module
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Gradle wrapper jar (should be committed but adding for reference)
+# gradle/wrapper/gradle-wrapper.jar

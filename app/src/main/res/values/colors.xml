@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="yellow_bg">#FFFDE7</color>
+    <color name="yellow_card">#FFF9C4</color>
+    <color name="yellow_primary">#F9A825</color>
+    <color name="yellow_primary_dark">#F57F17</color>
+    <color name="yellow_accent">#FFD54F</color>
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="white">#FFFFFF</color>
+    <color name="green">#4CAF50</color>
+    <color name="red">#F44336</color>
+    <color name="blue">#2196F3</color>
+</resources>

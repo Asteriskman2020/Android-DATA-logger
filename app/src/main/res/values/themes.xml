@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.DataLoggerV3" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/yellow_primary</item>
+        <item name="colorPrimaryDark">@color/yellow_primary_dark</item>
+        <item name="colorAccent">@color/yellow_accent</item>
+        <item name="android:windowBackground">@color/yellow_bg</item>
+        <item name="android:statusBarColor">@color/yellow_primary_dark</item>
+        <item name="android:navigationBarColor">@color/yellow_primary</item>
+    </style>
+
+</resources>
