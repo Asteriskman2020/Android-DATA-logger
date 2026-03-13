@@ -220,6 +220,7 @@ class BleManager(private val context: Context) {
                 mainHandler.post { callback?.onCountUpdate(count) }
             }
             CHAR_DATA_UUID -> {
+                mainHandler.post { callback?.onLog("DATA: $strValue") }
                 if (strValue.startsWith("END:")) {
                     val total = strValue.removePrefix("END:").toIntOrNull() ?: 0
                     mainHandler.post { callback?.onBufferComplete(total) }
@@ -227,6 +228,8 @@ class BleManager(private val context: Context) {
                     val record = parseDataRecord(strValue)
                     if (record != null) {
                         mainHandler.post { callback?.onBufferRecord(record) }
+                    } else {
+                        mainHandler.post { callback?.onLog("PARSE FAIL: $strValue") }
                     }
                 }
             }

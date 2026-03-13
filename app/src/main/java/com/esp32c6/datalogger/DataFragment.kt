@@ -255,7 +255,7 @@ class DataFragment : Fragment(), BleManager.BleCallback {
                 isFetching = false
                 btnFetchAll.isEnabled = true
                 btnFetchAll.text = "FETCH VIA BLE"
-                addLog("Fetch timeout — no response from device")
+                addLog("Fetch timeout — collected ${pendingRecords.size} record(s) so far, no END received")
                 showToast("Fetch timed out")
             }
         }, 15000)
@@ -367,16 +367,14 @@ class DataFragment : Fragment(), BleManager.BleCallback {
     override fun onBufferComplete(total: Int) {
         fetchTimeoutHandler.removeCallbacksAndMessages(null)
         isFetching = false
-        // Take a copy before passing to updateData — the adapter shares the same list
-        // reference as sensorRecords, so updateData(sensorRecords) would clear it first.
+        addLog("END received: firmware total=$total, pending=${pendingRecords.size}")
         val snapshot = pendingRecords.toList()
         pendingRecords.clear()
         sensorAdapter.updateData(snapshot)
-        // adapter.records == sensorRecords (same ref), so it is now filled with snapshot
         tvDataCount.text = "${sensorRecords.size} records"
         btnFetchAll.isEnabled = true
         btnFetchAll.text = "FETCH VIA BLE"
-        addLog("BLE fetch complete: ${sensorRecords.size} record(s) received")
+        addLog("Fetch done: ${sensorRecords.size} row(s) in table")
     }
 
     override fun onLog(msg: String) {
