@@ -22,6 +22,7 @@ class BleManager(private val context: Context) {
         val CHAR_STATUS_UUID: UUID = UUID.fromString("ab000004-0000-1000-8000-00805f9b34fb")
         val CHAR_SENSOR_UUID: UUID = UUID.fromString("ab000005-0000-1000-8000-00805f9b34fb")
         val CHAR_COUNT_UUID: UUID = UUID.fromString("ab000006-0000-1000-8000-00805f9b34fb")
+        val CHAR_DATA_UUID:  UUID = UUID.fromString("ab000007-0000-1000-8000-00805f9b34fb")
         val CCCD_UUID: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
         private const val GATT_DELAY_MS = 300L
     }
@@ -34,6 +35,8 @@ class BleManager(private val context: Context) {
         fun onSensorUpdate(tempAht: Float, humidity: Float, pressure: Float, tempBmp: Float)
         fun onStatusUpdate(status: String)
         fun onCountUpdate(count: Int)
+        fun onBufferRecord(record: SensorRecord)   // one sample from READBUF stream
+        fun onBufferComplete(total: Int)           // "END:N" received
         fun onLog(msg: String)
     }
 
@@ -216,6 +219,32 @@ class BleManager(private val context: Context) {
                 val count = strValue.toIntOrNull() ?: 0
                 mainHandler.post { callback?.onCountUpdate(count) }
             }
+            CHAR_DATA_UUID -> {
+                if (strValue.startsWith("END:")) {
+                    val total = strValue.removePrefix("END:").toIntOrNull() ?: 0
+                    mainHandler.post { callback?.onBufferComplete(total) }
+                } else if (strValue != "IDLE") {
+                    val record = parseDataRecord(strValue)
+                    if (record != null) {
+                        mainHandler.post { callback?.onBufferRecord(record) }
+                    }
+                }
+            }
+        }
+    }
+
+    // Parse {"i":N,"t":T,"h":H,"p":P,"tb":Tb} compact JSON from ab000007
+    private fun parseDataRecord(json: String): SensorRecord? {
+        return try {
+            fun extract(key: String): Float {
+                val pattern = Regex(""""$key":([\d.+-]+)""")
+                return pattern.find(json)?.groupValues?.get(1)?.toFloat() ?: 0f
+            }
+            val index = Regex(""""i":(\d+)""").find(json)?.groupValues?.get(1)?.toInt() ?: 0
+            SensorRecord(index, extract("t"), extract("h"), extract("p"), extract("tb"))
+        } catch (e: Exception) {
+            Log.e(TAG, "parseDataRecord failed: $json", e)
+            null
         }
     }
 
@@ -225,8 +254,8 @@ class BleManager(private val context: Context) {
             return
         }
 
-        // Enable notifications for ab000002, ab000004, ab000005
-        listOf(CHAR_MESSAGE_UUID, CHAR_STATUS_UUID, CHAR_SENSOR_UUID).forEach { charUuid ->
+        // Enable notifications for ab000002, ab000004, ab000005, ab000007
+        listOf(CHAR_MESSAGE_UUID, CHAR_STATUS_UUID, CHAR_SENSOR_UUID, CHAR_DATA_UUID).forEach { charUuid ->
             val char = service.getCharacteristic(charUuid)
             if (char != null) {
                 enqueueOperation(Runnable { enableNotification(gatt, char) })

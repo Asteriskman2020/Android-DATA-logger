@@ -13,11 +13,6 @@ import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.gson.JsonObject
-import com.google.gson.Gson
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import java.util.concurrent.TimeUnit
 
 class DataFragment : Fragment(), BleManager.BleCallback {
 
@@ -56,6 +51,8 @@ class DataFragment : Fragment(), BleManager.BleCallback {
     private var scanRunnable: Runnable? = null
 
     private val logBuilder = StringBuilder()
+    private val pendingRecords = mutableListOf<SensorRecord>()  // collecting READBUF stream
+    private var isFetching = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -235,55 +232,21 @@ class DataFragment : Fragment(), BleManager.BleCallback {
     }
 
     private fun fetchAllData() {
-        val ip = (activity as MainActivity).getEsp32Ip()
-        if (ip.isBlank()) {
-            showToast("Set ESP32 IP in Settings")
+        val ma = activity as MainActivity
+        if (!ma.bleManager.isConnected()) {
+            showToast("Not connected to device")
             return
         }
-
-        addLog("Fetching data from http://$ip/data ...")
+        if (isFetching) {
+            showToast("Fetch already in progress")
+            return
+        }
+        isFetching = true
+        pendingRecords.clear()
         btnFetchAll.isEnabled = false
-
-        Thread {
-            try {
-                val client = OkHttpClient.Builder()
-                    .connectTimeout(10, TimeUnit.SECONDS)
-                    .readTimeout(10, TimeUnit.SECONDS)
-                    .build()
-                val request = Request.Builder().url("http://$ip/data").build()
-                val response = client.newCall(request).execute()
-                val body = response.body?.string() ?: ""
-                val json = Gson().fromJson(body, JsonObject::class.java)
-                val samples = json.getAsJsonArray("samples")
-                val newRecords = mutableListOf<SensorRecord>()
-                samples.forEachIndexed { i, elem ->
-                    val s = elem.asJsonObject
-                    newRecords.add(
-                        SensorRecord(
-                            index = i + 1,
-                            tempAht = s.get("temp_aht").asFloat,
-                            humidity = s.get("humidity").asFloat,
-                            pressure = s.get("pressure").asFloat,
-                            tempBmp = s.get("temp_bmp").asFloat
-                        )
-                    )
-                }
-                requireActivity().runOnUiThread {
-                    sensorRecords.clear()
-                    sensorRecords.addAll(newRecords)
-                    sensorAdapter.updateData(sensorRecords)
-                    tvDataCount.text = "${sensorRecords.size} records"
-                    addLog("Fetched ${newRecords.size} records from ESP32")
-                    btnFetchAll.isEnabled = true
-                }
-            } catch (e: Exception) {
-                requireActivity().runOnUiThread {
-                    addLog("Fetch failed: ${e.message}")
-                    showToast("Fetch failed: ${e.message}")
-                    btnFetchAll.isEnabled = true
-                }
-            }
-        }.start()
+        btnFetchAll.text = "Fetching..."
+        addLog("Sending READBUF — waiting for buffer stream...")
+        ma.bleManager.sendCommand("READBUF")
     }
 
     private fun publishAllToMqtt() {
@@ -382,6 +345,23 @@ class DataFragment : Fragment(), BleManager.BleCallback {
     override fun onCountUpdate(count: Int) {
         tvBufferCount.text = count.toString()
         progressBuffer.progress = count
+    }
+
+    override fun onBufferRecord(record: SensorRecord) {
+        pendingRecords.add(record)
+        btnFetchAll.text = "Fetching ${pendingRecords.size}..."
+    }
+
+    override fun onBufferComplete(total: Int) {
+        isFetching = false
+        sensorRecords.clear()
+        sensorRecords.addAll(pendingRecords)
+        sensorAdapter.updateData(sensorRecords)
+        tvDataCount.text = "${sensorRecords.size} records"
+        btnFetchAll.isEnabled = true
+        btnFetchAll.text = "FETCH VIA BLE"
+        addLog("BLE fetch complete: $total sample(s) received")
+        pendingRecords.clear()
     }
 
     override fun onLog(msg: String) {

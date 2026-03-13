@@ -310,7 +310,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
-                    android:text="FETCH ALL DATA"
+                    android:text="FETCH VIA BLE"
                     android:backgroundTint="#F9A825"
                     android:textColor="#FFFFFF"
                     style="@style/Widget.MaterialComponents.Button" />
