@@ -249,7 +249,8 @@ class DataFragment : Fragment(), BleManager.BleCallback {
         addLog("Sending READBUF — waiting for buffer stream...")
         ma.bleManager.sendCommand("READBUF")
 
-        // Timeout: re-enable button if END:N never arrives within 15 seconds
+        // Timeout: re-enable button if END:N never arrives within 45 seconds
+        // (200 samples × 20 ms each = 4 s transfer + generous overhead)
         fetchTimeoutHandler.postDelayed({
             if (isFetching) {
                 isFetching = false
@@ -258,7 +259,7 @@ class DataFragment : Fragment(), BleManager.BleCallback {
                 addLog("Fetch timeout — collected ${pendingRecords.size} record(s) so far, no END received")
                 showToast("Fetch timed out")
             }
-        }, 15000)
+        }, 45000)
     }
 
     private fun publishAllToMqtt() {
