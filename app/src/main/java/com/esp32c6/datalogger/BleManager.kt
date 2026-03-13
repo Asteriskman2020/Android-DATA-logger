@@ -254,15 +254,16 @@ class BleManager(private val context: Context) {
             return
         }
 
-        // Enable notifications for ab000002, ab000004, ab000005, ab000007
-        listOf(CHAR_MESSAGE_UUID, CHAR_STATUS_UUID, CHAR_SENSOR_UUID, CHAR_DATA_UUID).forEach { charUuid ->
+        // Enable notifications for ab000005, ab000006, ab000007
+        // (ab000002 and ab000004 don't exist in BLE_SensorLogger firmware — skipped safely)
+        listOf(CHAR_MESSAGE_UUID, CHAR_STATUS_UUID, CHAR_SENSOR_UUID, CHAR_COUNT_UUID, CHAR_DATA_UUID).forEach { charUuid ->
             val char = service.getCharacteristic(charUuid)
             if (char != null) {
                 enqueueOperation(Runnable { enableNotification(gatt, char) })
             }
         }
 
-        // Read ab000006 (count)
+        // Also do an initial read of ab000006 (count) to show current value immediately
         val countChar = service.getCharacteristic(CHAR_COUNT_UUID)
         if (countChar != null) {
             enqueueOperation(Runnable { readCharacteristic(gatt, countChar) })

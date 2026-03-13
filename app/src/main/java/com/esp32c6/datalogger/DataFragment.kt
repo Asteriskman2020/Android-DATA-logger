@@ -367,14 +367,16 @@ class DataFragment : Fragment(), BleManager.BleCallback {
     override fun onBufferComplete(total: Int) {
         fetchTimeoutHandler.removeCallbacksAndMessages(null)
         isFetching = false
-        sensorRecords.clear()
-        sensorRecords.addAll(pendingRecords)
-        sensorAdapter.updateData(sensorRecords)
+        // Take a copy before passing to updateData — the adapter shares the same list
+        // reference as sensorRecords, so updateData(sensorRecords) would clear it first.
+        val snapshot = pendingRecords.toList()
+        pendingRecords.clear()
+        sensorAdapter.updateData(snapshot)
+        // adapter.records == sensorRecords (same ref), so it is now filled with snapshot
         tvDataCount.text = "${sensorRecords.size} records"
         btnFetchAll.isEnabled = true
         btnFetchAll.text = "FETCH VIA BLE"
-        addLog("BLE fetch complete: $total sample(s) received")
-        pendingRecords.clear()
+        addLog("BLE fetch complete: ${sensorRecords.size} record(s) received")
     }
 
     override fun onLog(msg: String) {
