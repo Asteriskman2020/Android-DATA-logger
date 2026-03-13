@@ -265,7 +265,7 @@
                         android:layout_width="0dp"
                         android:layout_height="14dp"
                         android:layout_weight="1"
-                        android:max="200"
+                        android:max="100"
                         android:progress="0"
                         android:progressTint="#F9A825" />
 
